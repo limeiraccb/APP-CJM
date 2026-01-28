@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CJM LIMEIRA - Gestão</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden">
+
+    <script>
+        // ATENÇÃO: Substitua pelas suas chaves do projeto Supabase
+        const SUPABASE_URL = 'https://ubxhxqoigdbyknucjwdl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVieGh4cW9pZ2RieWtudWNqd2RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1NTc5MDIsImV4cCI6MjA4NTEzMzkwMn0.ENr7Bub5iSbg_PqL7sHXFcZXRDKrjTUrXvtQYwfB_Fo';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let usuarioAtual = null;
+    </script>
+
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-90">
+        <div class="bg-white p-8 rounded-lg shadow-2xl w-96 text-center">
+            <h1 class="text-2xl font-bold mb-2 text-blue-900">CJM LIMEIRA</h1>
+            <p class="text-gray-500 mb-6">Acesso Restrito - Cooperadores</p>
+            
+            <input type="email" id="email" placeholder="Seu Email" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="password" placeholder="Sua Senha" class="w-full p-3 mb-6 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            
+            <button onclick="Auth.login()" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 font-bold transition">ENTRAR</button>
+            <button onclick="Auth.signup()" class="w-full mt-2 text-blue-600 text-sm hover:underline">Criar Conta</button>
+            <p id="auth-msg" class="mt-4 text-red-500 text-sm"></p>
+        </div>
+    </div>
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col hidden" id="sidebar">
+        <div class="p-6 border-b border-slate-700">
+            <h2 class="text-xl font-bold">CJM <span class="text-blue-400">System</span></h2>
+            <p class="text-xs text-gray-400 mt-1" id="user-display">Carregando...</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="Router.navigate('cadastro')" class="w-full flex items-center p-3 rounded hover:bg-slate-800 transition text-left">
+                <i class="fas fa-users-cog w-8"></i> Cadastro
+            </button>
+            <button onclick="Router.navigate('recitativos')" class="w-full flex items-center p-3 rounded hover:bg-slate-800 transition text-left">
+                <i class="fas fa-chart-line w-8"></i> Recitativos
+            </button>
+        </nav>
+        <div class="p-4 border-t border-slate-700">
+            <button onclick="Auth.logout()" class="w-full bg-red-600 bg-opacity-20 text-red-400 p-2 rounded hover:bg-red-600 hover:text-white transition">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto p-8 hidden" id="main-content">
+        
+        <section id="view-cadastro" class="fade-in hidden space-y-6">
+            <h2 class="text-2xl font-bold text-slate-800 border-b pb-2">Meu Cadastro</h2>
+            
+            <div class="bg-white p-6 rounded shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Nome do Cooperador</label>
+                        <input type="text" id="cad-nome" class="w-full border p-2 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Cidade</label>
+                        <select id="cad-cidade" class="w-full border p-2 rounded">
+                            <option value="Limeira">Limeira</option>
+                            <option value="Iracemápolis">Iracemápolis</option>
+                            <option value="Cordeirópolis">Cordeirópolis</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Comum Congregação</label>
+                        <input type="text" id="cad-comum" class="w-full border p-2 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Data Apresentação</label>
+                        <input type="date" id="cad-data" class="w-full border p-2 rounded">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Ancião Responsável</label>
+                        <input type="text" id="cad-anciao" class="w-full border p-2 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Cooperador de Ofício</label>
+                        <input type="text" id="cad-coop-oficio" class="w-full border p-2 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Diácono</label>
+                        <input type="text" id="cad-diacono" class="w-full border p-2 rounded">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Auxiliares Homens (Um por linha)</label>
+                        <textarea id="cad-aux-homens" rows="4" class="w-full border p-2 rounded" placeholder="João da Silva&#10;Pedro Santos"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Auxiliares Mulheres (Um por linha)</label>
+                        <textarea id="cad-aux-mulheres" rows="4" class="w-full border p-2 rounded" placeholder="Maria Souza&#10;Ana Oliveira"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="DataService.salvarPerfil()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold">
+                        <i class="fas fa-save mr-2"></i> Salvar Dados
+                    </button>
+                    
+                    <div class="flex items-center gap-2">
+                         <label class="cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded hover:bg-blue-200">
+                            <i class="fas fa-file-csv mr-2"></i> Importar CSV
+                            <input type="file" id="csv-upload" class="hidden" accept=".csv" onchange="MassImport.processar(this)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-recitativos" class="fade-in hidden space-y-6">
+            <h2 class="text-2xl font-bold text-slate-800 border-b pb-2 flex justify-between items-center">
+                Relatórios de Recitativos
+                <button onclick="Modal.openRecitativo()" class="bg-blue-600 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i> Novo Relatório
+                </button>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase">Total Meninos/Moços</h3>
+                    <p class="text-2xl font-bold text-blue-700" id="stat-total-m">0</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-pink-500">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase">Total Meninas/Moças</h3>
+                    <p class="text-2xl font-bold text-pink-700" id="stat-total-f">0</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase">Média Geral</h3>
+                    <p class="text-2xl font-bold text-green-700" id="stat-media">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded shadow overflow-hidden">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-slate-100 text-slate-600 uppercase font-bold text-xs">
+                        <tr>
+                            <th class="p-3">Data</th>
+                            <th class="p-3 text-center bg-blue-50">Meninos (Ñ Ler)</th>
+                            <th class="p-3 text-center bg-blue-50">Meninos</th>
+                            <th class="p-3 text-center bg-blue-50">Moços</th>
+                            <th class="p-3 text-center bg-pink-50">Meninas (Ñ Ler)</th>
+                            <th class="p-3 text-center bg-pink-50">Meninas</th>
+                            <th class="p-3 text-center bg-pink-50">Moças</th>
+                            <th class="p-3 text-center">Total</th>
+                            <th class="p-3 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recitativos-table-body" class="divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="modal-recitativo" class="fixed inset-0 z-40 hidden flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-lg">
+            <h3 class="text-lg font-bold mb-4">Lançar Recitativo</h3>
+            <input type="date" id="rec-data" class="w-full border p-2 mb-4 rounded bg-gray-50">
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="border p-2 rounded bg-blue-50">
+                    <p class="text-blue-800 font-bold text-center mb-2">Masculino</p>
+                    <label class="block text-xs">Não Sabem Ler</label>
+                    <input type="number" id="rec-m-nler" class="w-full border mb-2 p-1">
+                    <label class="block text-xs">Meninos</label>
+                    <input type="number" id="rec-m" class="w-full border mb-2 p-1">
+                    <label class="block text-xs">Moços</label>
+                    <input type="number" id="rec-mocos" class="w-full border p-1">
+                </div>
+                <div class="border p-2 rounded bg-pink-50">
+                    <p class="text-pink-800 font-bold text-center mb-2">Feminino</p>
+                    <label class="block text-xs">Não Sabem Ler</label>
+                    <input type="number" id="rec-f-nler" class="w-full border mb-2 p-1">
+                    <label class="block text-xs">Meninas</label>
+                    <input type="number" id="rec-f" class="w-full border mb-2 p-1">
+                    <label class="block text-xs">Moças</label>
+                    <input type="number" id="rec-mocas" class="w-full border p-1">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="Modal.closeRecitativo()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
+                <button onclick="DataService.salvarRecitativo()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Lançar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUTHENTICATION ---
+        const Auth = {
+            async login() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) this.showMsg(error.message);
+                else location.reload();
+            },
+            async signup() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) this.showMsg(error.message);
+                else this.showMsg("Verifique seu email para confirmar!", "green");
+            },
+            async logout() {
+                await supabase.auth.signOut();
+                location.reload();
+            },
+            showMsg(msg, color = 'red') {
+                const el = document.getElementById('auth-msg');
+                el.textContent = msg;
+                el.className = `mt-4 text-${color}-500 text-sm`;
+            },
+            async init() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    usuarioAtual = session.user;
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('sidebar').classList.remove('hidden');
+                    document.getElementById('sidebar').classList.add('flex');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    document.getElementById('user-display').textContent = usuarioAtual.email;
+                    
+                    Router.navigate('cadastro'); // Tela inicial
+                    await DataService.carregarPerfil();
+                }
+            }
+        };
+
+        // --- ROUTING / VIEW MANAGER ---
+        const Router = {
+            navigate(viewName) {
+                // Esconde todas
+                ['cadastro', 'recitativos'].forEach(v => {
+                    document.getElementById(`view-${v}`).classList.add('hidden');
+                });
+                // Mostra atual
+                document.getElementById(`view-${viewName}`).classList.remove('hidden');
+                
+                if (viewName === 'recitativos') DataService.carregarRecitativos();
+            }
+        };
+
+        // --- DATA SERVICE (CRUD) ---
+        const DataService = {
+            perfilId: null,
+
+            async carregarPerfil() {
+                try {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', usuarioAtual.id)
+                        .single();
+
+                    if (error) throw error;
+                    if (data) {
+                        this.perfilId = data.id;
+                        document.getElementById('cad-nome').value = data.nome_cooperador || '';
+                        document.getElementById('cad-cidade').value = data.cidade || 'Limeira';
+                        document.getElementById('cad-comum').value = data.comum_congregacao || '';
+                        document.getElementById('cad-anciao').value = data.nome_anciao || '';
+                        document.getElementById('cad-coop-oficio').value = data.nome_coop_oficio || '';
+                        document.getElementById('cad-diacono').value = data.nome_diacono || '';
+                        document.getElementById('cad-data').value = data.data_apresentacao || '';
+                        
+                        // Arrays para Textarea
+                        document.getElementById('cad-aux-homens').value = (data.auxiliares_homens || []).join('\n');
+                        document.getElementById('cad-aux-mulheres').value = (data.auxiliares_mulheres || []).join('\n');
+                    }
+                } catch (err) {
+                    console.log("Perfil ainda não preenchido ou erro:", err.message);
+                }
+            },
+
+            async salvarPerfil() {
+                const perfil = {
+                    id: usuarioAtual.id,
+                    nome_cooperador: document.getElementById('cad-nome').value,
+                    cidade: document.getElementById('cad-cidade').value,
+                    comum_congregacao: document.getElementById('cad-comum').value,
+                    nome_anciao: document.getElementById('cad-anciao').value,
+                    nome_coop_oficio: document.getElementById('cad-coop-oficio').value,
+                    nome_diacono: document.getElementById('cad-diacono').value,
+                    data_apresentacao: document.getElementById('cad-data').value || null,
+                    auxiliares_homens: document.getElementById('cad-aux-homens').value.split('\n').filter(x => x.trim() !== ''),
+                    auxiliares_mulheres: document.getElementById('cad-aux-mulheres').value.split('\n').filter(x => x.trim() !== '')
+                };
+
+                const { error } = await supabase.from('profiles').upsert(perfil);
+                
+                if (error) alert('Erro ao salvar: ' + error.message);
+                else alert('Dados atualizados com sucesso!');
+            },
+
+            async carregarRecitativos() {
+                const { data, error } = await supabase
+                    .from('recitativos')
+                    .select('*')
+                    .order('data_relatorio', { ascending: false });
+
+                if (error) return console.error(error);
+
+                const tbody = document.getElementById('recitativos-table-body');
+                tbody.innerHTML = '';
+                
+                let totalM = 0, totalF = 0, count = 0;
+
+                data.forEach(row => {
+                    const rowTotalM = (row.qtd_criancas_ler_m || 0) + (row.qtd_meninos || 0) + (row.qtd_mocos || 0);
+                    const rowTotalF = (row.qtd_criancas_ler_f || 0) + (row.qtd_meninas || 0) + (row.qtd_mocas || 0);
+                    
+                    totalM += rowTotalM;
+                    totalF += rowTotalF;
+                    count++;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b";
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold">${new Date(row.data_relatorio).toLocaleDateString('pt-BR')}</td>
+                        <td class="p-3 text-center text-gray-600">${row.qtd_criancas_ler_m}</td>
+                        <td class="p-3 text-center text-gray-600">${row.qtd_meninos}</td>
+                        <td class="p-3 text-center text-gray-600">${row.qtd_mocos}</td>
+                        <td class="p-3 text-center text-gray-600">${row.qtd_criancas_ler_f}</td>
+                        <td class="p-3 text-center text-gray-600">${row.qtd_meninas}</td>
+                        <td class="p-3 text-center text-gray-600">${row.qtd_mocas}</td>
+                        <td class="p-3 text-center font-bold text-blue-900">${rowTotalM + rowTotalF}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="DataService.deletarRecitativo('${row.id}')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Atualiza Cards
+                document.getElementById('stat-total-m').innerText = totalM;
+                document.getElementById('stat-total-f').innerText = totalF;
+                document.getElementById('stat-media').innerText = count > 0 ? Math.round((totalM + totalF) / count) : 0;
+            },
+
+            async salvarRecitativo() {
+                const novoRelatorio = {
+                    user_id: usuarioAtual.id,
+                    data_relatorio: document.getElementById('rec-data').value,
+                    qtd_criancas_ler_m: parseInt(document.getElementById('rec-m-nler').value) || 0,
+                    qtd_meninos: parseInt(document.getElementById('rec-m').value) || 0,
+                    qtd_mocos: parseInt(document.getElementById('rec-mocos').value) || 0,
+                    qtd_criancas_ler_f: parseInt(document.getElementById('rec-f-nler').value) || 0,
+                    qtd_meninas: parseInt(document.getElementById('rec-f').value) || 0,
+                    qtd_mocas: parseInt(document.getElementById('rec-mocas').value) || 0
+                };
+
+                if (!novoRelatorio.data_relatorio) return alert("Data é obrigatória");
+
+                const { error } = await supabase.from('recitativos').insert(novoRelatorio);
+                if (error) alert(error.message);
+                else {
+                    Modal.closeRecitativo();
+                    this.carregarRecitativos();
+                }
+            },
+
+            async deletarRecitativo(id) {
+                if(!confirm("Deseja realmente excluir este registro?")) return;
+                const { error } = await supabase.from('recitativos').delete().eq('id', id);
+                if (!error) this.carregarRecitativos();
+            }
+        };
+
+        // --- MASS IMPORT (CSV) ---
+        const MassImport = {
+            processar(input) {
+                const file = input.files[0];
+                if (!file) return;
+
+                Papa.parse(file, {
+                    header: true,
+                    complete: async (results) => {
+                        console.log("Dados CSV:", results.data);
+                        // Lógica simples: Pega o primeiro registro válido e preenche o form
+                        // Em um cenário real, você iteraria e faria inserts no banco
+                        // Mas como o perfil é 1:1 com o usuário logado, vamos preencher o form
+                        const row = results.data[0]; 
+                        if (row) {
+                            if(row['Nome']) document.getElementById('cad-nome').value = row['Nome'];
+                            if(row['Comum']) document.getElementById('cad-comum').value = row['Comum'];
+                            if(row['Cidade']) document.getElementById('cad-cidade').value = row['Cidade'];
+                            alert("Dados do CSV carregados no formulário. Revise e clique em Salvar.");
+                        }
+                    }
+                });
+            }
+        };
+
+        // --- UI HELPERS ---
+        const Modal = {
+            openRecitativo() {
+                document.getElementById('modal-recitativo').classList.remove('hidden');
+                // Data de hoje padrão
+                document.getElementById('rec-data').valueAsDate = new Date();
+            },
+            closeRecitativo() {
+                document.getElementById('modal-recitativo').classList.add('hidden');
+            }
+        };
+
+        // INICIALIZAÇÃO
+        Auth.init();
+
+    </script>
+</body>
+</html>
