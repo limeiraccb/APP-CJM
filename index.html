@@ -22,15 +22,18 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden">
 
+    <script src="js/config.js"></script>
+
     <script>
-        // --- CONFIGURAÇÃO ---
-        // ATENÇÃO: Substitua pelas suas chaves do projeto Supabase
-        // Se já estiverem configuradas, mantenha as suas!
-        const SUPABASE_URL = 'SUA_URL_SUPABASE_AQUI'; 
-        const SUPABASE_KEY = 'SUA_ANON_KEY_AQUI';
-        
-        // CORREÇÃO: Renomeamos a variável para evitar conflito com a biblioteca
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Verifica se o arquivo de config foi carregado corretamente
+        if (typeof CONFIG === 'undefined') {
+            document.body.innerHTML = '<div class="p-10 text-red-600 font-bold">Erro Crítico: O arquivo js/config.js não foi encontrado ou não carregou. Verifique a pasta js.</div>';
+            throw new Error("js/config.js não carregado");
+        }
+
+        // Inicializa o Cliente Supabase usando as chaves do arquivo separado
+        // Usamos 'supabaseClient' para evitar conflito com a variável global 'supabase' da biblioteca CDN
+        const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         let usuarioAtual = null;
     </script>
