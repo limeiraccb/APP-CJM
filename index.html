@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CJM LIMEIRA - Modular</title>
+    <title>CJM LIMEIRA - Gestão</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script type="module" src="js/main.js"></script>
@@ -15,66 +17,167 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95 hidden">
         <div class="bg-white p-10 rounded-2xl shadow-2xl w-96 text-center border-t-4 border-blue-600">
-            <h1 class="text-3xl font-extrabold mb-2 text-slate-800">CJM LIMEIRA</h1>
-            <div class="space-y-4 text-left mt-8">
-                <input type="email" id="login-email" placeholder="E-mail" class="w-full p-3 bg-slate-50 border rounded-lg">
-                <input type="password" id="login-password" placeholder="Senha" class="w-full p-3 bg-slate-50 border rounded-lg">
+            <div class="mb-6 flex justify-center">
+                <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl">
+                    <i class="fas fa-church"></i>
+                </div>
             </div>
-            <button id="btn-login" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold mt-8 hover:bg-blue-700 transition">ENTRAR</button>
-            <p id="auth-msg" class="mt-4 text-center text-sm font-bold text-red-500"></p>
+            <h1 class="text-3xl font-extrabold mb-2 text-slate-800">CJM LIMEIRA</h1>
+            <p class="text-gray-500 mb-8 text-sm uppercase tracking-wide">Gestão Administrativa</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 ml-1 mb-1">E-MAIL</label>
+                    <input type="email" id="login-email" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 ml-1 mb-1">SENHA</label>
+                    <input type="password" id="login-password" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                </div>
+            </div>
+            
+            <button id="btn-login" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold mt-8 shadow-lg shadow-blue-200 transition transform hover:-translate-y-1">
+                ENTRAR NO SISTEMA
+            </button>
+            
+            <p id="auth-msg" class="mt-4 text-center text-sm font-bold text-red-500 min-h-[20px]"></p>
         </div>
     </div>
 
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden shadow-xl" id="sidebar">
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden shadow-xl relative z-10" id="sidebar">
         <div class="p-6 border-b border-slate-800 bg-slate-900">
-            <h2 class="text-xl font-bold text-white">CJM <span class="text-blue-500">System</span></h2>
-            <p class="text-xs text-gray-400 mt-2 truncate" id="user-display">...</p>
+            <h2 class="text-xl font-bold text-white tracking-tight">CJM <span class="text-blue-500">System</span></h2>
+            <div class="flex items-center mt-4 gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs text-gray-400 truncate w-32" id="user-display">Carregando...</p>
+                    <p class="text-[10px] text-green-500 font-bold uppercase">Online</p>
+                </div>
+            </div>
         </div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button id="nav-cadastro" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 transition text-left text-sm font-bold">
-                <i class="fas fa-id-card mr-3 w-5"></i> Cadastro
+        
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="text-xs font-bold text-slate-500 uppercase px-3 mb-2">Menu Principal</p>
+            
+            <button id="nav-cadastro" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 hover:text-white transition text-left group">
+                <span class="w-8 h-8 flex items-center justify-center rounded-md bg-slate-800 group-hover:bg-blue-600 transition text-blue-500 group-hover:text-white mr-3">
+                    <i class="fas fa-id-card"></i>
+                </span>
+                Cadastro
             </button>
-            <button id="nav-recitativos" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 transition text-left text-sm font-bold">
-                <i class="fas fa-chart-pie mr-3 w-5"></i> Recitativos
+            
+            <button id="nav-recitativos" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 hover:text-white transition text-left group">
+                <span class="w-8 h-8 flex items-center justify-center rounded-md bg-slate-800 group-hover:bg-pink-600 transition text-pink-500 group-hover:text-white mr-3">
+                    <i class="fas fa-chart-pie"></i>
+                </span>
+                Recitativos
             </button>
         </nav>
+        
         <div class="p-4 border-t border-slate-800">
-            <button id="btn-logout" class="w-full bg-slate-800 text-red-400 p-2 rounded-lg hover:bg-red-600 hover:text-white transition text-sm font-bold">
+            <button id="btn-logout" class="w-full flex items-center justify-center bg-slate-800 text-red-400 p-2 rounded-lg hover:bg-red-600 hover:text-white transition text-sm font-bold">
                 <i class="fas fa-sign-out-alt mr-2"></i> Sair
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-auto p-4 md:p-8 hidden bg-slate-50 relative" id="main-content">
+    <main class="flex-1 overflow-auto p-4 md:p-8 hidden bg-slate-50" id="main-content">
         
-        <section id="page-cadastro" class="hidden fade-in max-w-4xl mx-auto">
-            <header class="mb-8 border-b border-slate-200 pb-4 flex justify-between items-end">
+        <section id="page-cadastro" class="hidden fade-in max-w-6xl mx-auto pb-20">
+            <header class="mb-8 flex justify-between items-end border-b border-slate-200 pb-4">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800">Meu Cadastro</h2>
-                    <p class="text-slate-500 text-sm">Gerencie suas informações.</p>
+                    <h2 class="text-3xl font-bold text-slate-800">Cadastro do Cooperador</h2>
+                    <p class="text-slate-500 mt-1">Gerencie suas informações e equipe local.</p>
                 </div>
-                <button id="btn-save-profile" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-bold shadow transition">
-                    <i class="fas fa-save mr-2"></i> Salvar
+                <button id="btn-save-profile" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition flex items-center">
+                    <i class="fas fa-save mr-2"></i> Salvar Alterações
                 </button>
             </header>
             
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cooperador de Jovens e Menores</label>
-                    <input type="text" id="inp-nome" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-sm font-bold text-blue-600 uppercase mb-4 flex items-center">
+                            <i class="fas fa-user-circle mr-2"></i> Identificação
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Cooperador de Jovens e Menores</label>
+                                <input type="text" id="inp-nome" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Seu nome completo">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Cidade</label>
+                                <select id="inp-cidade" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="Limeira">Limeira</option>
+                                    <option value="Iracemápolis">Iracemápolis</option>
+                                    <option value="Cordeirópolis">Cordeirópolis</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Comum Congregação</label>
+                                <input type="text" id="inp-comum" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Data de Apresentação</label>
+                                <input type="date" id="inp-data" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none text-slate-600">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-sm font-bold text-blue-600 uppercase mb-4 flex items-center">
+                            <i class="fas fa-users mr-2"></i> Liderança Local
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Ancião Responsável</label>
+                                <input type="text" id="inp-anciao" class="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Cooperador de Ofício</label>
+                                <input type="text" id="inp-coop-oficio" class="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Diácono</label>
+                                <input type="text" id="inp-diacono" class="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cidade</label>
-                    <select id="inp-cidade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Limeira">Limeira</option>
-                        <option value="Iracemápolis">Iracemápolis</option>
-                        <option value="Cordeirópolis">Cordeirópolis</option>
-                    </select>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
+                    <h3 class="text-sm font-bold text-blue-600 uppercase mb-4 flex items-center">
+                        <i class="fas fa-hands-helping mr-2"></i> Equipe de Auxiliares
+                    </h3>
+                    
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-500 mb-2">Auxiliares (Irmãos)</label>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="inp-aux-h" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded text-sm outline-none" placeholder="Nome do irmão...">
+                            <button id="btn-add-aux-h" class="bg-blue-100 text-blue-600 w-10 rounded hover:bg-blue-200 transition">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="list-aux-h" class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                            </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-2">Auxiliares (Irmãs)</label>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="inp-aux-m" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded text-sm outline-none" placeholder="Nome da irmã...">
+                            <button id="btn-add-aux-m" class="bg-pink-100 text-pink-600 w-10 rounded hover:bg-pink-200 transition">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="list-aux-m" class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                            </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Comum Congregação</label>
-                    <input type="text" id="inp-comum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
+
             </div>
         </section>
 
@@ -83,7 +186,7 @@
             <div class="bg-white p-10 rounded-xl shadow-sm border border-slate-100 text-center">
                 <div class="text-slate-400 mb-4 text-4xl"><i class="fas fa-tools"></i></div>
                 <p class="text-lg text-slate-600">Módulo em construção...</p>
-                <p class="text-sm text-slate-400">A lógica será implementada no arquivo js/pages/recitativos.js</p>
+                <p class="text-sm text-slate-400">Este módulo será ativado em breve na nova arquitetura.</p>
             </div>
         </section>
 
