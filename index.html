@@ -1,575 +1,92 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CJM LIMEIRA - Gestão</title>
-    
+    <title>CJM LIMEIRA - Modular</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
-        /* Custom Scrollbar para ficar elegante */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    
+    <script type="module" src="js/main.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans h-screen flex overflow-hidden">
 
-    <script src="js/config.js"></script>
-
-    <script>
-        if (typeof CONFIG === 'undefined') {
-            document.body.innerHTML = '<div class="flex items-center justify-center h-screen bg-red-50 text-red-700 font-bold">Erro Crítico: js/config.js não encontrado.</div>';
-            throw new Error("js/config.js não carregado");
-        }
-        const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-        let usuarioAtual = null;
-        
-        // Variáveis locais para gerenciar a lista de auxiliares dinamicamente
-        let stateAuxHomens = [];
-        let stateAuxMulheres = [];
-    </script>
-
-    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95 transition-opacity duration-500">
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95 hidden">
         <div class="bg-white p-10 rounded-2xl shadow-2xl w-96 text-center border-t-4 border-blue-600">
-            <div class="mb-6 flex justify-center">
-                <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl">
-                    <i class="fas fa-church"></i>
-                </div>
-            </div>
             <h1 class="text-3xl font-extrabold mb-2 text-slate-800">CJM LIMEIRA</h1>
-            <p class="text-gray-500 mb-8 text-sm uppercase tracking-wide">Gestão Administrativa</p>
-            
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 ml-1 mb-1">E-MAIL</label>
-                    <input type="email" id="email" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 ml-1 mb-1">SENHA</label>
-                    <input type="password" id="password" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                </div>
+            <div class="space-y-4 text-left mt-8">
+                <input type="email" id="login-email" placeholder="E-mail" class="w-full p-3 bg-slate-50 border rounded-lg">
+                <input type="password" id="login-password" placeholder="Senha" class="w-full p-3 bg-slate-50 border rounded-lg">
             </div>
-            
-            <button onclick="Auth.login()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold mt-8 shadow-lg shadow-blue-200 transition transform hover:-translate-y-1">ENTRAR NO SISTEMA</button>
-            <div class="mt-4 flex justify-between text-xs text-gray-500 px-1">
-                <button onclick="Auth.signup()" class="hover:text-blue-600 hover:underline">Criar nova conta</button>
-                <span>v1.2</span>
-            </div>
-            <p id="auth-msg" class="mt-4 text-center text-sm font-semibold min-h-[20px]"></p>
+            <button id="btn-login" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold mt-8 hover:bg-blue-700 transition">ENTRAR</button>
+            <p id="auth-msg" class="mt-4 text-center text-sm font-bold text-red-500"></p>
         </div>
     </div>
 
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden shadow-xl relative z-10" id="sidebar">
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden shadow-xl" id="sidebar">
         <div class="p-6 border-b border-slate-800 bg-slate-900">
-            <h2 class="text-xl font-bold text-white tracking-tight">CJM <span class="text-blue-500">System</span></h2>
-            <div class="flex items-center mt-4 gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="overflow-hidden">
-                    <p class="text-xs text-gray-400 truncate w-32" id="user-display">Carregando...</p>
-                    <p class="text-[10px] text-green-500 font-bold uppercase">Online</p>
-                </div>
-            </div>
+            <h2 class="text-xl font-bold text-white">CJM <span class="text-blue-500">System</span></h2>
+            <p class="text-xs text-gray-400 mt-2 truncate" id="user-display">...</p>
         </div>
-        
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <p class="text-xs font-bold text-slate-500 uppercase px-3 mb-2">Menu Principal</p>
-            <button onclick="Router.navigate('cadastro')" id="btn-nav-cadastro" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 hover:text-white transition text-left group">
-                <span class="w-8 h-8 flex items-center justify-center rounded-md bg-slate-800 group-hover:bg-blue-600 transition text-blue-500 group-hover:text-white mr-3">
-                    <i class="fas fa-id-card"></i>
-                </span>
-                Cadastro
+        <nav class="flex-1 p-4 space-y-2">
+            <button id="nav-cadastro" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 transition text-left text-sm font-bold">
+                <i class="fas fa-id-card mr-3 w-5"></i> Cadastro
             </button>
-            <button onclick="Router.navigate('recitativos')" id="btn-nav-recitativos" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 hover:text-white transition text-left group">
-                <span class="w-8 h-8 flex items-center justify-center rounded-md bg-slate-800 group-hover:bg-pink-600 transition text-pink-500 group-hover:text-white mr-3">
-                    <i class="fas fa-chart-pie"></i>
-                </span>
-                Recitativos
+            <button id="nav-recitativos" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 transition text-left text-sm font-bold">
+                <i class="fas fa-chart-pie mr-3 w-5"></i> Recitativos
             </button>
         </nav>
-        
         <div class="p-4 border-t border-slate-800">
-            <button onclick="Auth.logout()" class="w-full flex items-center justify-center bg-slate-800 text-red-400 p-2 rounded-lg hover:bg-red-600 hover:text-white transition text-sm font-bold">
-                <i class="fas fa-sign-out-alt mr-2"></i> Sair do Sistema
+            <button id="btn-logout" class="w-full bg-slate-800 text-red-400 p-2 rounded-lg hover:bg-red-600 hover:text-white transition text-sm font-bold">
+                <i class="fas fa-sign-out-alt mr-2"></i> Sair
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-auto p-4 md:p-8 hidden bg-slate-50" id="main-content">
+    <main class="flex-1 overflow-auto p-4 md:p-8 hidden bg-slate-50 relative" id="main-content">
         
-        <section id="view-cadastro" class="fade-in hidden max-w-5xl mx-auto pb-20">
-            <header class="mb-8 flex justify-between items-end border-b border-slate-200 pb-4">
+        <section id="page-cadastro" class="hidden fade-in max-w-4xl mx-auto">
+            <header class="mb-8 border-b border-slate-200 pb-4 flex justify-between items-end">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-800">Cadastro do Cooperador</h2>
-                    <p class="text-slate-500 mt-1">Gerencie suas informações e equipe local.</p>
+                    <h2 class="text-3xl font-bold text-slate-800">Meu Cadastro</h2>
+                    <p class="text-slate-500 text-sm">Gerencie suas informações.</p>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="DataService.salvarPerfil()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-bold shadow-lg shadow-blue-200 transition flex items-center">
-                        <i class="fas fa-save mr-2"></i> Salvar Alterações
-                    </button>
-                </div>
+                <button id="btn-save-profile" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-bold shadow transition">
+                    <i class="fas fa-save mr-2"></i> Salvar
+                </button>
             </header>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 class="text-sm font-bold text-blue-600 uppercase mb-4 flex items-center">
-                            <i class="fas fa-user-circle mr-2"></i> Identificação
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Cooperador de Jovens e Menores</label>
-                                <input type="text" id="cad-nome" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Seu nome completo">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Cidade</label>
-                                <select id="cad-cidade" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="Limeira">Limeira</option>
-                                    <option value="Iracemápolis">Iracemápolis</option>
-                                    <option value="Cordeirópolis">Cordeirópolis</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Comum Congregação</label>
-                                <input type="text" id="cad-comum" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Data de Apresentação</label>
-                                <input type="date" id="cad-data" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none text-slate-600">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 class="text-sm font-bold text-blue-600 uppercase mb-4 flex items-center">
-                            <i class="fas fa-users mr-2"></i> Liderança Local
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Ancião Responsável</label>
-                                <input type="text" id="cad-anciao" class="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Cooperador de Ofício</label>
-                                <input type="text" id="cad-coop-oficio" class="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Diácono</label>
-                                <input type="text" id="cad-diacono" class="w-full p-2 bg-slate-50 border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-                    </div>
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cooperador de Jovens e Menores</label>
+                    <input type="text" id="inp-nome" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
-                    <h3 class="text-sm font-bold text-blue-600 uppercase mb-4 flex items-center">
-                        <i class="fas fa-hands-helping mr-2"></i> Equipe de Auxiliares
-                    </h3>
-                    
-                    <div class="mb-6">
-                        <label class="block text-xs font-bold text-slate-500 mb-2">Auxiliares (Irmãos)</label>
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" id="input-aux-h" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded text-sm outline-none" placeholder="Nome do irmão...">
-                            <button onclick="AuxiliarManager.add('H')" class="bg-blue-100 text-blue-600 w-10 rounded hover:bg-blue-200 transition"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <div id="list-aux-h" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                            </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">Auxiliares (Irmãs)</label>
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" id="input-aux-m" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded text-sm outline-none" placeholder="Nome da irmã...">
-                            <button onclick="AuxiliarManager.add('M')" class="bg-pink-100 text-pink-600 w-10 rounded hover:bg-pink-200 transition"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <div id="list-aux-m" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                            </div>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cidade</label>
+                    <select id="inp-cidade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Limeira">Limeira</option>
+                        <option value="Iracemápolis">Iracemápolis</option>
+                        <option value="Cordeirópolis">Cordeirópolis</option>
+                    </select>
                 </div>
-
-            </div>
-            
-            <div class="mt-8 text-center border-t border-slate-200 pt-6">
-                <p class="text-xs text-gray-400 mb-2">Precisa carregar dados de uma planilha?</p>
-                <label class="cursor-pointer inline-flex items-center text-slate-500 hover:text-blue-600 transition text-sm">
-                    <i class="fas fa-file-csv mr-2"></i> Importar dados via CSV
-                    <input type="file" id="csv-upload" class="hidden" accept=".csv" onchange="MassImport.processar(this)">
-                </label>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Comum Congregação</label>
+                    <input type="text" id="inp-comum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
             </div>
         </section>
 
-        <section id="view-recitativos" class="fade-in hidden space-y-6">
-            <h2 class="text-2xl font-bold text-slate-800 border-b pb-2 flex justify-between items-center">
-                Relatórios de Recitativos
-                <button onclick="Modal.openRecitativo()" class="bg-blue-600 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-700">
-                    <i class="fas fa-plus mr-2"></i> Novo Relatório
-                </button>
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-                    <h3 class="text-gray-500 text-xs font-bold uppercase">Total Meninos/Moços</h3>
-                    <p class="text-2xl font-bold text-blue-700" id="stat-total-m">0</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-pink-500">
-                    <h3 class="text-gray-500 text-xs font-bold uppercase">Total Meninas/Moças</h3>
-                    <p class="text-2xl font-bold text-pink-700" id="stat-total-f">0</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
-                    <h3 class="text-gray-500 text-xs font-bold uppercase">Média Geral</h3>
-                    <p class="text-2xl font-bold text-green-700" id="stat-media">0</p>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100">
-                <table class="min-w-full text-sm text-left">
-                    <thead class="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b">
-                        <tr>
-                            <th class="p-3">Data</th>
-                            <th class="p-3 text-center text-blue-600">Meninos (Ñ Ler)</th>
-                            <th class="p-3 text-center text-blue-600">Meninos</th>
-                            <th class="p-3 text-center text-blue-600">Moços</th>
-                            <th class="p-3 text-center text-pink-600">Meninas (Ñ Ler)</th>
-                            <th class="p-3 text-center text-pink-600">Meninas</th>
-                            <th class="p-3 text-center text-pink-600">Moças</th>
-                            <th class="p-3 text-center">Total</th>
-                            <th class="p-3 text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recitativos-table-body" class="divide-y divide-gray-100">
-                        </tbody>
-                </table>
+        <section id="page-recitativos" class="hidden fade-in max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 border-b pb-4">Recitativos</h2>
+            <div class="bg-white p-10 rounded-xl shadow-sm border border-slate-100 text-center">
+                <div class="text-slate-400 mb-4 text-4xl"><i class="fas fa-tools"></i></div>
+                <p class="text-lg text-slate-600">Módulo em construção...</p>
+                <p class="text-sm text-slate-400">A lógica será implementada no arquivo js/pages/recitativos.js</p>
             </div>
         </section>
 
     </main>
-
-    <div id="modal-recitativo" class="fixed inset-0 z-40 hidden flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl">
-            <h3 class="text-lg font-bold mb-4 text-slate-800">Lançar Recitativo</h3>
-            <input type="date" id="rec-data" class="w-full border p-2 mb-4 rounded bg-gray-50">
-            
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="border p-3 rounded-lg bg-blue-50 border-blue-100">
-                    <p class="text-blue-800 font-bold text-center mb-2 text-sm uppercase">Masculino</p>
-                    <label class="block text-xs text-blue-900 mb-1">Não Sabem Ler</label>
-                    <input type="number" id="rec-m-nler" class="w-full border mb-2 p-1 rounded">
-                    <label class="block text-xs text-blue-900 mb-1">Meninos</label>
-                    <input type="number" id="rec-m" class="w-full border mb-2 p-1 rounded">
-                    <label class="block text-xs text-blue-900 mb-1">Moços</label>
-                    <input type="number" id="rec-mocos" class="w-full border p-1 rounded">
-                </div>
-                <div class="border p-3 rounded-lg bg-pink-50 border-pink-100">
-                    <p class="text-pink-800 font-bold text-center mb-2 text-sm uppercase">Feminino</p>
-                    <label class="block text-xs text-pink-900 mb-1">Não Sabem Ler</label>
-                    <input type="number" id="rec-f-nler" class="w-full border mb-2 p-1 rounded">
-                    <label class="block text-xs text-pink-900 mb-1">Meninas</label>
-                    <input type="number" id="rec-f" class="w-full border mb-2 p-1 rounded">
-                    <label class="block text-xs text-pink-900 mb-1">Moças</label>
-                    <input type="number" id="rec-mocas" class="w-full border p-1 rounded">
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2">
-                <button onclick="Modal.closeRecitativo()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-bold">Cancelar</button>
-                <button onclick="DataService.salvarRecitativo()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow">Confirmar Lançamento</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- GERENCIADOR DE AUXILIARES (NOVA LÓGICA UX) ---
-        const AuxiliarManager = {
-            render() {
-                const listH = document.getElementById('list-aux-h');
-                const listM = document.getElementById('list-aux-m');
-                
-                listH.innerHTML = stateAuxHomens.map((nome, index) => `
-                    <div class="flex items-center justify-between bg-slate-100 p-2 rounded text-sm group hover:bg-slate-200">
-                        <span>${nome}</span>
-                        <button onclick="AuxiliarManager.remove('H', ${index})" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-                    </div>
-                `).join('');
-
-                listM.innerHTML = stateAuxMulheres.map((nome, index) => `
-                    <div class="flex items-center justify-between bg-pink-50 p-2 rounded text-sm group hover:bg-pink-100">
-                        <span>${nome}</span>
-                        <button onclick="AuxiliarManager.remove('M', ${index})" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-                    </div>
-                `).join('');
-            },
-            add(type) {
-                const inputId = type === 'H' ? 'input-aux-h' : 'input-aux-m';
-                const input = document.getElementById(inputId);
-                const nome = input.value.trim();
-                
-                if (nome) {
-                    if (type === 'H') stateAuxHomens.push(nome);
-                    else stateAuxMulheres.push(nome);
-                    
-                    input.value = '';
-                    this.render();
-                }
-            },
-            remove(type, index) {
-                if (type === 'H') stateAuxHomens.splice(index, 1);
-                else stateAuxMulheres.splice(index, 1);
-                this.render();
-            }
-        };
-
-        // --- AUTHENTICATION ---
-        const Auth = {
-            async login() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const btn = event.target;
-                
-                btn.innerText = "Entrando...";
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                
-                if (error) {
-                    this.showMsg(error.message);
-                    btn.innerText = "ENTRAR";
-                } else {
-                    location.reload();
-                }
-            },
-            async signup() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                if(!email || !password) return this.showMsg("Preencha email e senha");
-                
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) this.showMsg(error.message);
-                else this.showMsg("Verifique seu email para confirmar!", "green");
-            },
-            async logout() {
-                await supabaseClient.auth.signOut();
-                location.reload();
-            },
-            showMsg(msg, color = 'red') {
-                const el = document.getElementById('auth-msg');
-                el.textContent = msg;
-                el.className = `mt-4 text-center text-sm font-bold text-${color}-500`;
-            },
-            async init() {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    usuarioAtual = session.user;
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('sidebar').classList.remove('hidden');
-                    document.getElementById('sidebar').classList.add('flex');
-                    document.getElementById('main-content').classList.remove('hidden');
-                    document.getElementById('user-display').textContent = usuarioAtual.email;
-                    
-                    Router.navigate('cadastro');
-                    await DataService.carregarPerfil();
-                }
-            }
-        };
-
-        // --- ROUTING ---
-        const Router = {
-            navigate(viewName) {
-                ['cadastro', 'recitativos'].forEach(v => {
-                    document.getElementById(`view-${v}`).classList.add('hidden');
-                    // Style menu
-                    const btn = document.getElementById(`btn-nav-${v}`);
-                    if(btn) {
-                        if(v === viewName) btn.classList.add('bg-slate-800', 'text-white');
-                        else btn.classList.remove('bg-slate-800', 'text-white');
-                    }
-                });
-                document.getElementById(`view-${viewName}`).classList.remove('hidden');
-                
-                if (viewName === 'recitativos') DataService.carregarRecitativos();
-            }
-        };
-
-        // --- DATA SERVICE ---
-        const DataService = {
-            perfilId: null,
-
-            async carregarPerfil() {
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', usuarioAtual.id)
-                        .single();
-
-                    if (data) {
-                        this.perfilId = data.id;
-                        document.getElementById('cad-nome').value = data.nome_cooperador || '';
-                        document.getElementById('cad-cidade').value = data.cidade || 'Limeira';
-                        document.getElementById('cad-comum').value = data.comum_congregacao || '';
-                        document.getElementById('cad-anciao').value = data.nome_anciao || '';
-                        document.getElementById('cad-coop-oficio').value = data.nome_coop_oficio || '';
-                        document.getElementById('cad-diacono').value = data.nome_diacono || '';
-                        document.getElementById('cad-data').value = data.data_apresentacao || '';
-                        
-                        // Carrega arrays para o estado e renderiza
-                        stateAuxHomens = data.auxiliares_homens || [];
-                        stateAuxMulheres = data.auxiliares_mulheres || [];
-                        AuxiliarManager.render();
-                    }
-                } catch (err) {
-                    console.log("Perfil novo ou erro:", err.message);
-                }
-            },
-
-            async salvarPerfil() {
-                const perfil = {
-                    id: usuarioAtual.id,
-                    nome_cooperador: document.getElementById('cad-nome').value,
-                    cidade: document.getElementById('cad-cidade').value,
-                    comum_congregacao: document.getElementById('cad-comum').value,
-                    nome_anciao: document.getElementById('cad-anciao').value,
-                    nome_coop_oficio: document.getElementById('cad-coop-oficio').value,
-                    nome_diacono: document.getElementById('cad-diacono').value,
-                    data_apresentacao: document.getElementById('cad-data').value || null,
-                    // Salva os arrays do estado
-                    auxiliares_homens: stateAuxHomens,
-                    auxiliares_mulheres: stateAuxMulheres
-                };
-
-                const { error } = await supabaseClient.from('profiles').upsert(perfil);
-                
-                if (error) alert('Erro ao salvar: ' + error.message);
-                else alert('Dados atualizados com sucesso!');
-            },
-
-            async carregarRecitativos() {
-                const { data, error } = await supabaseClient
-                    .from('recitativos')
-                    .select('*')
-                    .order('data_relatorio', { ascending: false });
-
-                if (error) return console.error(error);
-
-                const tbody = document.getElementById('recitativos-table-body');
-                tbody.innerHTML = '';
-                
-                let totalM = 0, totalF = 0, count = 0;
-
-                data.forEach(row => {
-                    const rowTotalM = (row.qtd_criancas_ler_m || 0) + (row.qtd_meninos || 0) + (row.qtd_mocos || 0);
-                    const rowTotalF = (row.qtd_criancas_ler_f || 0) + (row.qtd_meninas || 0) + (row.qtd_mocas || 0);
-                    
-                    totalM += rowTotalM;
-                    totalF += rowTotalF;
-                    count++;
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 border-b last:border-0 transition";
-                    tr.innerHTML = `
-                        <td class="p-3 font-bold text-slate-700">${new Date(row.data_relatorio).toLocaleDateString('pt-BR')}</td>
-                        <td class="p-3 text-center text-slate-500 border-l border-slate-100">${row.qtd_criancas_ler_m}</td>
-                        <td class="p-3 text-center text-slate-500">${row.qtd_meninos}</td>
-                        <td class="p-3 text-center text-slate-500 border-r border-slate-100">${row.qtd_mocos}</td>
-                        <td class="p-3 text-center text-slate-500">${row.qtd_criancas_ler_f}</td>
-                        <td class="p-3 text-center text-slate-500">${row.qtd_meninas}</td>
-                        <td class="p-3 text-center text-slate-500 border-r border-slate-100">${row.qtd_mocas}</td>
-                        <td class="p-3 text-center font-bold text-blue-900 bg-slate-50">${rowTotalM + rowTotalF}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="DataService.deletarRecitativo('${row.id}')" class="text-red-400 hover:text-red-600 transition">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-                document.getElementById('stat-total-m').innerText = totalM;
-                document.getElementById('stat-total-f').innerText = totalF;
-                document.getElementById('stat-media').innerText = count > 0 ? Math.round((totalM + totalF) / count) : 0;
-            },
-
-            async salvarRecitativo() {
-                const novoRelatorio = {
-                    user_id: usuarioAtual.id,
-                    data_relatorio: document.getElementById('rec-data').value,
-                    qtd_criancas_ler_m: parseInt(document.getElementById('rec-m-nler').value) || 0,
-                    qtd_meninos: parseInt(document.getElementById('rec-m').value) || 0,
-                    qtd_mocos: parseInt(document.getElementById('rec-mocos').value) || 0,
-                    qtd_criancas_ler_f: parseInt(document.getElementById('rec-f-nler').value) || 0,
-                    qtd_meninas: parseInt(document.getElementById('rec-f').value) || 0,
-                    qtd_mocas: parseInt(document.getElementById('rec-mocas').value) || 0
-                };
-
-                if (!novoRelatorio.data_relatorio) return alert("Selecione a data!");
-
-                const { error } = await supabaseClient.from('recitativos').insert(novoRelatorio);
-                if (error) alert(error.message);
-                else {
-                    Modal.closeRecitativo();
-                    this.carregarRecitativos();
-                }
-            },
-
-            async deletarRecitativo(id) {
-                if(!confirm("Tem certeza que deseja apagar este relatório?")) return;
-                const { error } = await supabaseClient.from('recitativos').delete().eq('id', id);
-                if (!error) this.carregarRecitativos();
-            }
-        };
-
-        // --- MASS IMPORT ---
-        const MassImport = {
-            processar(input) {
-                const file = input.files[0];
-                if (!file) return;
-
-                Papa.parse(file, {
-                    header: true,
-                    complete: async (results) => {
-                        const row = results.data[0]; 
-                        if (row) {
-                            // Mapeamento simples
-                            if(row['Nome']) document.getElementById('cad-nome').value = row['Nome'];
-                            if(row['Comum']) document.getElementById('cad-comum').value = row['Comum'];
-                            if(row['Cidade']) document.getElementById('cad-cidade').value = row['Cidade'];
-                            alert("Dados carregados do CSV. Verifique e salve.");
-                        }
-                    }
-                });
-            }
-        };
-
-        // --- UI HELPERS ---
-        const Modal = {
-            openRecitativo() {
-                document.getElementById('modal-recitativo').classList.remove('hidden');
-                document.getElementById('rec-data').valueAsDate = new Date();
-            },
-            closeRecitativo() {
-                document.getElementById('modal-recitativo').classList.add('hidden');
-            }
-        };
-
-        Auth.init();
-        
-        // Habilita tecla Enter para adicionar Auxiliares
-        document.getElementById('input-aux-h').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') AuxiliarManager.add('H');
-        });
-        document.getElementById('input-aux-m').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') AuxiliarManager.add('M');
-        });
-
-    </script>
 </body>
 </html>
