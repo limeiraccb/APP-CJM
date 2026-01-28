@@ -12,7 +12,7 @@ async function initApp() {
     if (session) {
         currentUser = session.user;
         
-        // Atualiza a Interface
+        // UI Updates
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('sidebar').classList.remove('hidden');
         document.getElementById('sidebar').classList.add('flex');
@@ -21,9 +21,8 @@ async function initApp() {
         
         // Iniciar na tela de cadastro
         Router.navigate('cadastro');
-        // Carrega dados E ativa os eventos da página
         CadastroPage.load(currentUser.id);
-        CadastroPage.setupEvents(); // IMPORTANTE: Ativa os botões +
+        CadastroPage.setupEvents(); 
     } else {
         document.getElementById('login-screen').classList.remove('hidden');
     }
@@ -55,17 +54,20 @@ document.getElementById('nav-cadastro').addEventListener('click', () => {
     Router.navigate('cadastro');
     if(currentUser) {
         CadastroPage.load(currentUser.id);
-        CadastroPage.setupEvents(); // Reativa eventos ao voltar para a aba
+        CadastroPage.setupEvents();
     }
 });
 
 // Navegação - Recitativos
 document.getElementById('nav-recitativos').addEventListener('click', () => {
     Router.navigate('recitativos');
-    RecitativosPage.init();
+    // Passamos o usuário atual para a página saber de quem carregar
+    if(currentUser) {
+        RecitativosPage.init(currentUser);
+    }
 });
 
-// Botão Salvar Geral
+// Botão Salvar Geral (Cadastro)
 document.getElementById('btn-save-profile').addEventListener('click', () => {
     if(currentUser) CadastroPage.save(currentUser.id);
 });
