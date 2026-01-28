@@ -23,10 +23,14 @@
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden">
 
     <script>
+        // --- CONFIGURAÇÃO ---
         // ATENÇÃO: Substitua pelas suas chaves do projeto Supabase
-        const SUPABASE_URL = 'SUA_URL_SUPABASE';
-        const SUPABASE_KEY = 'SUA_ANON_KEY';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Se já estiverem configuradas, mantenha as suas!
+        const SUPABASE_URL = 'SUA_URL_SUPABASE_AQUI'; 
+        const SUPABASE_KEY = 'SUA_ANON_KEY_AQUI';
+        
+        // CORREÇÃO: Renomeamos a variável para evitar conflito com a biblioteca
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let usuarioAtual = null;
     </script>
@@ -218,19 +222,19 @@
             async login() {
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (error) this.showMsg(error.message);
                 else location.reload();
             },
             async signup() {
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
-                const { data, error } = await supabase.auth.signUp({ email, password });
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
                 if (error) this.showMsg(error.message);
                 else this.showMsg("Verifique seu email para confirmar!", "green");
             },
             async logout() {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 location.reload();
             },
             showMsg(msg, color = 'red') {
@@ -239,7 +243,7 @@
                 el.className = `mt-4 text-${color}-500 text-sm`;
             },
             async init() {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) {
                     usuarioAtual = session.user;
                     document.getElementById('login-screen').classList.add('hidden');
@@ -274,7 +278,7 @@
 
             async carregarPerfil() {
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('profiles')
                         .select('*')
                         .eq('id', usuarioAtual.id)
@@ -314,14 +318,14 @@
                     auxiliares_mulheres: document.getElementById('cad-aux-mulheres').value.split('\n').filter(x => x.trim() !== '')
                 };
 
-                const { error } = await supabase.from('profiles').upsert(perfil);
+                const { error } = await supabaseClient.from('profiles').upsert(perfil);
                 
                 if (error) alert('Erro ao salvar: ' + error.message);
                 else alert('Dados atualizados com sucesso!');
             },
 
             async carregarRecitativos() {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('recitativos')
                     .select('*')
                     .order('data_relatorio', { ascending: false });
@@ -381,7 +385,7 @@
 
                 if (!novoRelatorio.data_relatorio) return alert("Data é obrigatória");
 
-                const { error } = await supabase.from('recitativos').insert(novoRelatorio);
+                const { error } = await supabaseClient.from('recitativos').insert(novoRelatorio);
                 if (error) alert(error.message);
                 else {
                     Modal.closeRecitativo();
@@ -391,7 +395,7 @@
 
             async deletarRecitativo(id) {
                 if(!confirm("Deseja realmente excluir este registro?")) return;
-                const { error } = await supabase.from('recitativos').delete().eq('id', id);
+                const { error } = await supabaseClient.from('recitativos').delete().eq('id', id);
                 if (!error) this.carregarRecitativos();
             }
         };
@@ -407,8 +411,6 @@
                     complete: async (results) => {
                         console.log("Dados CSV:", results.data);
                         // Lógica simples: Pega o primeiro registro válido e preenche o form
-                        // Em um cenário real, você iteraria e faria inserts no banco
-                        // Mas como o perfil é 1:1 com o usuário logado, vamos preencher o form
                         const row = results.data[0]; 
                         if (row) {
                             if(row['Nome']) document.getElementById('cad-nome').value = row['Nome'];
