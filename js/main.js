@@ -12,7 +12,7 @@ async function initApp() {
     if (session) {
         currentUser = session.user;
         
-        // UI Updates
+        // Atualiza a Interface
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('sidebar').classList.remove('hidden');
         document.getElementById('sidebar').classList.add('flex');
@@ -21,13 +21,15 @@ async function initApp() {
         
         // Iniciar na tela de cadastro
         Router.navigate('cadastro');
+        // Carrega dados E ativa os eventos da página
         CadastroPage.load(currentUser.id);
+        CadastroPage.setupEvents(); // IMPORTANTE: Ativa os botões +
     } else {
         document.getElementById('login-screen').classList.remove('hidden');
     }
 }
 
-// --- EVENT LISTENERS ---
+// --- EVENT LISTENERS (Menu e Sistema) ---
 
 // Login
 document.getElementById('btn-login').addEventListener('click', async () => {
@@ -39,7 +41,6 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     
     try {
         await AuthSystem.login(email, pass);
-        // O reload acontece dentro do auth.js, mas se passar:
         window.location.reload();
     } catch (error) {
         msg.innerText = "Erro: " + error.message;
@@ -49,21 +50,25 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 // Logout
 document.getElementById('btn-logout').addEventListener('click', () => AuthSystem.logout());
 
-// Navegação
+// Navegação - Cadastro
 document.getElementById('nav-cadastro').addEventListener('click', () => {
     Router.navigate('cadastro');
-    if(currentUser) CadastroPage.load(currentUser.id);
+    if(currentUser) {
+        CadastroPage.load(currentUser.id);
+        CadastroPage.setupEvents(); // Reativa eventos ao voltar para a aba
+    }
 });
 
+// Navegação - Recitativos
 document.getElementById('nav-recitativos').addEventListener('click', () => {
     Router.navigate('recitativos');
     RecitativosPage.init();
 });
 
-// Ações Específicas
+// Botão Salvar Geral
 document.getElementById('btn-save-profile').addEventListener('click', () => {
     if(currentUser) CadastroPage.save(currentUser.id);
 });
 
-// Start
+// Iniciar Aplicação
 initApp();

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CJM LIMEIRA - Gestão</title>
+    <title>CJM LIMEIRA - Gestão Modular</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -153,27 +153,45 @@
                         <i class="fas fa-hands-helping mr-2"></i> Equipe de Auxiliares
                     </h3>
                     
-                    <div class="mb-6">
-                        <label class="block text-xs font-bold text-slate-500 mb-2">Auxiliares (Irmãos)</label>
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" id="inp-aux-h" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded text-sm outline-none" placeholder="Nome do irmão...">
-                            <button id="btn-add-aux-h" class="bg-blue-100 text-blue-600 w-10 rounded hover:bg-blue-200 transition">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                    <div class="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                        <label class="block text-xs font-bold text-blue-800 mb-2 uppercase">Irmãos (Jovens/Meninos)</label>
+                        <div class="flex flex-col gap-2 mb-2">
+                            <input type="text" id="inp-aux-h-nome" class="w-full p-2 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Nome do Irmão">
+                            <div class="flex gap-2">
+                                <select id="inp-aux-h-grupo" class="w-full p-2 border border-slate-200 rounded text-sm bg-white outline-none">
+                                    <option value="" disabled selected>Grupo</option>
+                                    <option value="Meninos">Meninos</option>
+                                    <option value="Moços">Moços</option>
+                                    <option value="Não Sabem Ler">Não Sabem Ler</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <button id="btn-add-aux-h" class="bg-blue-600 text-white w-12 rounded hover:bg-blue-700 transition shadow-sm">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div id="list-aux-h" class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        <div id="list-aux-h" class="space-y-1 max-h-40 overflow-y-auto pr-1 mt-3">
                             </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">Auxiliares (Irmãs)</label>
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" id="inp-aux-m" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded text-sm outline-none" placeholder="Nome da irmã...">
-                            <button id="btn-add-aux-m" class="bg-pink-100 text-pink-600 w-10 rounded hover:bg-pink-200 transition">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                    <div class="bg-pink-50/30 p-4 rounded-lg border border-pink-50">
+                        <label class="block text-xs font-bold text-pink-800 mb-2 uppercase">Irmãs (Moças/Meninas)</label>
+                        <div class="flex flex-col gap-2 mb-2">
+                            <input type="text" id="inp-aux-m-nome" class="w-full p-2 border border-pink-200 rounded text-sm focus:ring-1 focus:ring-pink-500 outline-none" placeholder="Nome da Irmã">
+                            <div class="flex gap-2">
+                                <select id="inp-aux-m-grupo" class="w-full p-2 border border-pink-200 rounded text-sm bg-white outline-none">
+                                    <option value="" disabled selected>Grupo</option>
+                                    <option value="Meninas">Meninas</option>
+                                    <option value="Moças">Moças</option>
+                                    <option value="Não Sabem Ler">Não Sabem Ler</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <button id="btn-add-aux-m" class="bg-pink-500 text-white w-12 rounded hover:bg-pink-600 transition shadow-sm">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div id="list-aux-m" class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        <div id="list-aux-m" class="space-y-1 max-h-40 overflow-y-auto pr-1 mt-3">
                             </div>
                     </div>
                 </div>
