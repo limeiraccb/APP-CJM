@@ -32,7 +32,6 @@
         }
 
         // Inicializa o Cliente Supabase usando as chaves do arquivo separado
-        // Usamos 'supabaseClient' para evitar conflito com a variável global 'supabase' da biblioteca CDN
         const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         let usuarioAtual = null;
@@ -80,7 +79,7 @@
             <div class="bg-white p-6 rounded shadow-lg">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold mb-1">Nome do Cooperador</label>
+                        <label class="block text-sm font-bold mb-1">Cooperador de Jovens e Menores</label>
                         <input type="text" id="cad-nome" class="w-full border p-2 rounded">
                     </div>
                     <div>
